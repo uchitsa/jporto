@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -90,25 +91,25 @@ public class RandomPortPool {
     }
 
     // Return it/them back to the pool.
-    public void release(int port) {
+    public void release(int port) throws IOException {
         safe(() -> ports.removeIf(p -> p == port));
     }
 
-    private int take() throws SocketException {
+    private int take() throws IOException {
         ServerSocket server = new ServerSocket(0);
         int p = server.getLocalPort();
         server.close();
         return p;
     }
 
-    private int take(int opt) throws SocketException {
+    private int take(int opt) throws IOException {
         ServerSocket server = new ServerSocket(opt);
         int p = server.getLocalPort();
         server.close();
         return p;
     }
 
-    private <T> T safe(SafeBlock<T> block) {
+    private <T> T safe(SafeBlock<T> block) throws IOException {
         if (sync) {
             synchronized (monitor) {
                 return block.execute();
@@ -119,7 +120,7 @@ public class RandomPortPool {
     }
 
     private interface SafeBlock<T> {
-        T execute();
+        T execute() throws IOException;
     }
 }
 
