@@ -61,13 +61,16 @@ public class RandomPortPool {
                 try {
                     for (int i = 0; i < total; i++) {
                         opts[i] = i == 0 ? take() : take(opts[i - 1] + 1);
+
+                        int finalI = i;
+                        if (ports.stream().anyMatch(p -> p == opts[finalI])) {
+                            return null;
+                        }
                     }
                 } catch (SocketException e) {
                     return null;
                 }
-                if (opts == null || ports.stream().anyMatch(p -> p == opts[i])) {
-                    return null;
-                }
+
                 int d = total * (total - 1) / 2;
                 if (opts.stream().mapToInt(Integer::intValue).sum() - (total * opts[0]) == d) {
                     ports.addAll(opts);
